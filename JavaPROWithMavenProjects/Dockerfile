@@ -1,5 +1,8 @@
-FROM ubuntu
-RUN apt update
-RUN apt install -y ncat
-EXPOSE 8081
-ENTRYPOINT ["ncat", "127.0.0.1", "8081"]
+FROM maven AS build
+COPY . .
+RUN mvn clean package -DskipTests -Denable-preview
+
+FROM openjdk:21
+COPY --from=build /target/jar.jar jar.jar
+EXPOSE 8090
+ENTRYPOINT ["java","--enable-preview","-jar","jar.jar"]
